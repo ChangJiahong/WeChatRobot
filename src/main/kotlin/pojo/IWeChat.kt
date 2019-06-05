@@ -1,9 +1,9 @@
-package com.cjh.wechatrobot
+package com.cjh.wechatrobot.pojo
 
 /**
  *
  * @author ChangJiahong
- * @date 2019/6/4
+ * @date 2019/6/5
  */
 interface IWeChat {
 
@@ -16,5 +16,6 @@ interface IWeChat {
      * 发送消息
      */
     fun sendMsg(msg: String)
+
 
 }

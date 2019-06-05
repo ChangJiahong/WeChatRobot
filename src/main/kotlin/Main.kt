@@ -1,6 +1,7 @@
 package com.cjh.wechatrobot
 
 import com.cjh.wechatrobot.impl.WeChat
+import com.cjh.wechatrobot.service.WeChatService
 
 /**
  *
@@ -10,26 +11,9 @@ import com.cjh.wechatrobot.impl.WeChat
 
 
 fun main() {
-    val response = HttpHelper.instance.get(HttpHelper.UUID,
-        mapOf("appid" to "wx782c26e4c19acffb",
-            "fun" to "new",
-            "lang" to "zh_CN"))
 
-    if (response.isSuccessful){
-        val re = response.body!!.string()
+    val weChatService = WeChatService()
+    WeChat(weChatService).login()
 
-        println(re)
-    }
-
-
-//    login()
-//    login()
 
 }
-
-var weChat: WeChat? = null
-
-fun login() = weChat?:run {
-    println("new")
-    weChat = WeChat()
-    weChat }

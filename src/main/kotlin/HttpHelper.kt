@@ -1,10 +1,12 @@
 package com.cjh.wechatrobot
 
+import com.sun.xml.internal.ws.developer.JAXWSProperties.CONNECT_TIMEOUT
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import kotlin.properties.Delegates
+import org.apache.log4j.Logger
+import java.util.concurrent.TimeUnit
 
 /**
  *
@@ -13,6 +15,7 @@ import kotlin.properties.Delegates
  */
 class HttpHelper {
 
+    val Log = Logger.getLogger(HttpHelper::class.java)
 
     companion object{
         /**
@@ -23,11 +26,21 @@ class HttpHelper {
         /**
          * 获取二维码
          */
-        val QRCODE = "https://login.wx.qq.com/jslogin"
+        val QRCODE = "https://login.wx.qq.com/qrcode"
 
+        val QRCODE_RESULT = "https://login.wx.qq.com/cgi-bin/mmwebwx-bin/login"
 
-        val okHttpClient = OkHttpClient.Builder().addInterceptor(RequestInterceptor()).build();
+        /**
+         * okHttp
+         */
+        val okHttpClient = OkHttpClient.Builder().connectTimeout(5000L, TimeUnit.SECONDS) //连接超时
+            .readTimeout(5000L, TimeUnit.SECONDS) //读取超时
+            .writeTimeout(5000L, TimeUnit.SECONDS) //写超时
+            .addInterceptor(RequestInterceptor()).build();
 
+        /**
+         * 单例
+         */
         private var mInstance: HttpHelper? = null
 
         val instance
@@ -40,15 +53,12 @@ class HttpHelper {
 
     private fun <K, V> Map<K, V>.toQueryString(): String = this.map { "${it.key}=${it.value}" }.joinToString("&")
 
-
     /**
      * get请求封装
      */
-    fun get(url: String, params: Map<String,String>): Response{
+    fun doGet(url: String): Response{
 
-        val mUrl = "${url}?${params.toQueryString()}"
-
-        val request = Request.Builder().url(mUrl).get().build()
+        val request = Request.Builder().url(url).get().build()
 
         val call = okHttpClient.newCall(request)
 
@@ -56,6 +66,20 @@ class HttpHelper {
 
         return response
     }
+
+    /**
+     * get请求封装
+     */
+    fun doGet(url: String, params: Map<String,Any>): Response{
+
+        val mUrl = "${url}?${params.toQueryString()}"
+
+        return doGet(mUrl)
+    }
+
+
+
+
 
 
 
