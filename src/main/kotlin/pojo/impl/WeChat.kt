@@ -3,6 +3,8 @@ package com.cjh.wechatrobot.impl
 import com.cjh.wechatrobot.HttpHelper
 import com.cjh.wechatrobot.pojo.IWeChat
 import com.cjh.wechatrobot.service.IWeChatService
+import com.cjh.wechatrobot.utils.FileUtil
+import com.cjh.wechatrobot.utils.JsonXMLUtil
 import com.cjh.wechatrobot.utils.QRCodeUtil
 import org.apache.log4j.Logger
 import java.io.File
@@ -17,12 +19,44 @@ class WeChat(val weChatService: IWeChatService) : IWeChat {
 
     val Log = Logger.getLogger(WeChat::class.java)
 
-    lateinit var redirect_uri: String
+    /**
+     * 登录状态码
+     */
+    private var loginStatus: Boolean
+
+    val isLogin
+        get() = loginStatus
+
+    var redirect_uri: String
+    var skey: String
+    var wxsid: String
+    var wxuin: String
+    var passTicket: String
+
+
+    init {
+        /**
+         * 初始化登录状态
+         */
+        val json = FileUtil.readFromFile("./temp/login.json")
+        JsonXMLUtil.json2Obj(json, WeChat::class.java).apply {
+            this@WeChat.loginStatus = this.loginStatus
+            this@WeChat.skey = this.skey
+            this@WeChat.wxsid = this.wxsid
+            this@WeChat.wxuin = this.wxuin
+            this@WeChat.passTicket = this.passTicket
+            this@WeChat.redirect_uri = this.redirect_uri
+        }
+    }
 
     /**
      * 登录
      */
-    override fun login() {
+    override fun login(): Boolean{
+        if (isLogin){
+            Log.info("已登录！")
+            return true
+        }
 
         var loging = true
         // uuid 扫码过程
@@ -30,7 +64,7 @@ class WeChat(val weChatService: IWeChatService) : IWeChat {
             // 请求uuid
             val uuid = weChatService.getUUID()
             // 获取二维码图片
-            var qr = weChatService.getQRCode(uuid, "temp.png")
+            var qr = weChatService.getQRCode(uuid, "./temp/temp.png")
 
             if (qr != null) {
                 // 如果二维码不为空，在控制台显示
@@ -69,12 +103,26 @@ class WeChat(val weChatService: IWeChatService) : IWeChat {
 
         }
 
-        Log.info("登录链接${this.redirect_uri}")
+        Log.info("登录链接：${this.redirect_uri}")
 
-        //TODO: 登录获取参数
+        val map = weChatService.getSkey(redirect_uri)
+        if (map != null && map["ret"] == "0"){
+            map.apply {
+                skey = this["skey"].toString()
+                wxsid = this["wxsid"].toString()
+                wxuin = this["wxuin"].toString()
+                passTicket = this["pass_ticket"].toString()
+            }
+            /**
+             * 保存登录状态
+             */
+            FileUtil.writeToFile(this.toString(), "./temp/login.json")
 
-
-
+            Log.info("登录成功！")
+            return true
+        }
+        Log.info("登录失败！")
+        return false
     }
 
     /**
@@ -82,6 +130,10 @@ class WeChat(val weChatService: IWeChatService) : IWeChat {
      */
     override fun sendMsg(msg: String) {
 
+    }
+
+    override fun toString(): String {
+        return JsonXMLUtil.obj2Json(this)
     }
 
 

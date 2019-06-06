@@ -30,6 +30,7 @@ class HttpHelper {
 
         val QRCODE_RESULT = "https://login.wx.qq.com/cgi-bin/mmwebwx-bin/login"
 
+
         /**
          * okHttp
          */

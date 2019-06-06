@@ -1,9 +1,11 @@
 package com.cjh.wechatrobot.service
 
 import com.cjh.wechatrobot.HttpHelper
-import com.cjh.wechatrobot.HttpHelper.Companion.QRCODE_RESULT
+import com.cjh.wechatrobot.utils.FileUtil
+import com.cjh.wechatrobot.utils.JsonXMLUtil
 import org.apache.log4j.Logger
 import java.io.File
+import java.io.InputStream
 
 /**
  *
@@ -68,16 +70,8 @@ class WeChatService : IWeChatService {
         if (response.isSuccessful){
             val inS = response.body!!.byteStream()
 
-            val file = File(fileP)
-            if (!file.exists()){
-                file.createNewFile()
-            }
+            val file = FileUtil.writeToFile(fileP, inS)
 
-            inS.use { input ->
-                file.outputStream().use { fileOut ->
-                    input.copyTo(fileOut)
-                }
-            }
             Log.info("获取成功，文件路径：${file.absolutePath}")
             return file
         }
@@ -85,6 +79,8 @@ class WeChatService : IWeChatService {
         Log.info("获取失败，链接错误！")
         return null
     }
+
+
 
     /**
      * 查询二维码扫描结果
@@ -137,5 +133,25 @@ class WeChatService : IWeChatService {
         }
 
         return null
+    }
+
+    /**
+     * 获取登录参数
+     * skey、wxsid、wxuin、pass_ticket
+     * @param redirect_uri 重定向
+     * @return 参数
+     */
+    override fun getSkey(redirect_uri: String): Map<String, Any>? {
+        var redirect_uri = "$redirect_uri&fun=new&version=v2"
+        val response = HttpHelper.instance.doGet(redirect_uri)
+        if (response.isSuccessful){
+            val res = response.body!!.string()
+
+            Log.debug(res)
+
+            return JsonXMLUtil.xml2map(res)
+        }
+        return null
+
     }
 }

@@ -10,7 +10,7 @@ interface IWeChat {
     /**
      * 登录
      */
-    fun login()
+    fun login(): Boolean
 
     /**
      * 发送消息

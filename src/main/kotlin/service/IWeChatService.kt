@@ -29,4 +29,11 @@ interface IWeChatService {
      */
     fun queryQRCodeScanResults(uuid: String, tip: Int): Pair<String,String>?
 
+    /**
+     * 获取登录参数
+     * skey、wxsid、wxuin、pass_ticket
+     * @param redirect_uri 重定向
+     * @return 参数
+     */
+    fun getSkey(redirect_uri: String): Map<String, Any>?
 }
